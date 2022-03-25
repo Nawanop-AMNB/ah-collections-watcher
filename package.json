@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:client": "cd client && npm run build",
+    "start:client": "cd client && npm start",
+    "build:server": "cd server && npm run build",
+    "start:server": "cd server && npm start"
   },
   "author": "Nawanop",
   "license": "ISC",
