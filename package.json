@@ -2,12 +2,7 @@
   "name": "ah-collections-watcher",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": {
-    "build:client": "cd client && npm run build",
-    "start:client": "cd client && npm start",
-    "build:server": "cd server && npm run build",
-    "start:server": "cd server && npm start"
-  },
+  "scripts": {},
   "author": "Nawanop",
   "license": "ISC",
   "repository": {
