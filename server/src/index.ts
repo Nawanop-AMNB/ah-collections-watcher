@@ -2,8 +2,8 @@ import Koa from "koa";
 import KoaRouter from "koa-router";
 import bodyParser from "koa-bodyparser";
 import logger from "koa-logger";
-import { COLLECTIONS_PATH } from "./src/configs/constants";
-import { readJson, writeJson } from "./src/utils";
+import { COLLECTIONS_PATH } from "./configs/constants";
+import { readJson, writeJson } from "./utils";
 
 type CollectionData = { collections: Record<string, string[]> | undefined };
 
