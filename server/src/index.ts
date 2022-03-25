@@ -4,6 +4,7 @@ import bodyParser from "koa-bodyparser";
 import logger from "koa-logger";
 import { COLLECTIONS_PATH } from "./configs/constants";
 import { readJson, writeJson } from "./utils";
+import { keys } from "lodash";
 
 type CollectionData = { collections: Record<string, string[]> | undefined };
 
@@ -13,6 +14,13 @@ app.use(bodyParser());
 app.use(logger());
 
 const router = new KoaRouter();
+
+router.get("/collections", (ctx) => {
+  const data: CollectionData = readJson(COLLECTIONS_PATH);
+
+  ctx.status = 200;
+  ctx.body = keys(data.collections);
+});
 
 router.post("/collections/:name", (ctx) => {
   const name = ctx.params.name;
