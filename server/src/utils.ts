@@ -2,14 +2,14 @@ import axios from "axios";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname } from "path";
 import { stringify } from "querystring";
-import { LINE_NOTIFY_TOKEN, LINE_NOTIFY_URL } from "./configs/constants";
+import { LINE_NOTIFY_URL } from "./configs/constants";
 
-export async function notify(messages: string[]) {
+export async function notify(token: string, messages: string[]) {
   return axios({
     method: "post",
     url: LINE_NOTIFY_URL,
     headers: {
-      Authorization: `Bearer ${LINE_NOTIFY_TOKEN}`,
+      Authorization: `Bearer ${token}`,
       "Content-Type": "application/x-www-form-urlencoded",
     },
     data: stringify({

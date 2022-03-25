@@ -2,7 +2,7 @@ import Koa from "koa";
 import KoaRouter from "koa-router";
 import bodyParser from "koa-bodyparser";
 import logger from "koa-logger";
-import { COLLECTIONS_PATH } from "./configs/constants";
+import { DB_PATH } from "./configs/constants";
 import { readJson, writeJson } from "./utils";
 import { keys } from "lodash";
 
@@ -16,7 +16,7 @@ app.use(logger());
 const router = new KoaRouter();
 
 router.get("/collections", (ctx) => {
-  const data: CollectionData = readJson(COLLECTIONS_PATH);
+  const data: CollectionData = readJson(DB_PATH);
 
   ctx.status = 200;
   ctx.body = keys(data.collections);
@@ -24,11 +24,11 @@ router.get("/collections", (ctx) => {
 
 router.post("/collections/:name", (ctx) => {
   const name = ctx.params.name;
-  const data: CollectionData = readJson(COLLECTIONS_PATH);
+  const data: CollectionData = readJson(DB_PATH);
   data.collections ||= {};
   data.collections[name] = [];
 
-  writeJson(COLLECTIONS_PATH, data);
+  writeJson(DB_PATH, data);
 
   ctx.status = 200;
   ctx.body = { message: `${name} is added to watch-list` };
@@ -36,11 +36,11 @@ router.post("/collections/:name", (ctx) => {
 
 router.delete("/collections/:name", (ctx) => {
   const name = ctx.params.name;
-  const data: CollectionData = readJson(COLLECTIONS_PATH);
+  const data: CollectionData = readJson(DB_PATH);
   data.collections ||= {};
   delete data.collections[name];
 
-  writeJson(COLLECTIONS_PATH, data);
+  writeJson(DB_PATH, data);
 
   ctx.status = 200;
   ctx.body = { message: `${name} is removed from watch-list` };
