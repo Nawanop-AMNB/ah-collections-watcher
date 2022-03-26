@@ -13,5 +13,8 @@
     "url": "https://github.com/Nawanop-AMNB/ah-collections-watcher/issues"
   },
   "homepage": "https://github.com/Nawanop-AMNB/ah-collections-watcher#readme",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "chalk": "^5.0.1"
+  }
 }

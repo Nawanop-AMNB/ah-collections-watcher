@@ -15,6 +15,9 @@ const theme = createTheme({
       main: red.A400,
     },
   },
+  typography: {
+    fontFamily: "'Mitr', sans-serif",
+  },
 });
 
 export default theme;

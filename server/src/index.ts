@@ -1,50 +1,30 @@
 import Koa from "koa";
-import KoaRouter from "koa-router";
 import bodyParser from "koa-bodyparser";
 import logger from "koa-logger";
-import { DB_PATH } from "./configs/constants";
-import { readJson, writeJson } from "./utils";
-import { keys } from "lodash";
-
-type CollectionData = { collections: Record<string, string[]> | undefined };
+import Router from "koa-router";
+import cors from "koa2-cors";
+import Log from "./modules/Log";
+import { collection, followUp } from "./routes";
+import detector from "./scripts/detector";
+import { looper, registerRouter } from "./utils";
 
 const app = new Koa();
 
 app.use(bodyParser());
-app.use(logger());
+// app.use(logger());
 
-const router = new KoaRouter();
+const router = new Router();
+registerRouter(router, [followUp, collection]);
 
-router.get("/collections", (ctx) => {
-  const data: CollectionData = readJson(DB_PATH);
-
-  ctx.status = 200;
-  ctx.body = keys(data.collections);
-});
-
-router.post("/collections/:name", (ctx) => {
-  const name = ctx.params.name;
-  const data: CollectionData = readJson(DB_PATH);
-  data.collections ||= {};
-  data.collections[name] = [];
-
-  writeJson(DB_PATH, data);
-
-  ctx.status = 200;
-  ctx.body = { message: `${name} is added to watch-list` };
-});
-
-router.delete("/collections/:name", (ctx) => {
-  const name = ctx.params.name;
-  const data: CollectionData = readJson(DB_PATH);
-  data.collections ||= {};
-  delete data.collections[name];
-
-  writeJson(DB_PATH, data);
-
-  ctx.status = 200;
-  ctx.body = { message: `${name} is removed from watch-list` };
-});
-
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+  })
+);
 app.use(router.routes());
-app.listen(1880);
+app.use(router.allowedMethods());
+app.listen(1880, async () => {
+  Log.info("server is running on port 1880");
+  Log.info("collection detector is enabled");
+  await looper(detector, 5000);
+});

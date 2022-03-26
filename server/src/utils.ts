@@ -1,8 +1,16 @@
 import axios from "axios";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFile, writeFile } from "fs";
+import type Router from "koa-router";
 import { dirname } from "path";
 import { stringify } from "querystring";
 import { LINE_NOTIFY_URL } from "./configs/constants";
+
+export const looper = async (cb: () => Promise<void>, millis: number) => {
+  await cb();
+  setTimeout(async () => {
+    await looper(cb, millis);
+  }, millis);
+};
 
 export async function notify(token: string, messages: string[]) {
   return axios({
@@ -18,23 +26,64 @@ export async function notify(token: string, messages: string[]) {
   });
 }
 
-export function writeJson(path: string, json: any) {
+export const now = () => {
+  return new Date().toISOString();
+};
+
+export async function writeJson(path: string, json: any) {
   const dir = dirname(path);
 
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
 
-  return writeFileSync(path, JSON.stringify(json, null, 2), {
-    encoding: "utf-8",
+  return new Promise<void>((res, rej) => {
+    writeFile(
+      path,
+      JSON.stringify(json, null, 2),
+      {
+        encoding: "utf-8",
+      },
+      (err) => {
+        if (err) {
+          rej(err);
+        } else {
+          res();
+        }
+      }
+    );
   });
 }
 
-export function readJson(path: string) {
-  const dir = dirname(path);
-
-  if (!existsSync(dir)) {
+export async function readJson(path: string) {
+  if (!existsSync(path)) {
     return {};
   }
-  return JSON.parse(readFileSync(path, { encoding: "utf-8" })) as any;
+
+  const data = await new Promise<any>((res, rej) => {
+    readFile(path, { encoding: "utf-8" }, (err, data) => {
+      if (err) {
+        rej(err);
+      } else {
+        res(data);
+      }
+    });
+  });
+  return JSON.parse(data) as any;
+}
+
+export function getDiscordInviteRegex() {
+  const protocol = "(?:(?:http|https)://)?";
+  const subdomain = "(?:www.)?";
+  const domain = "(?:disco|discord|discordapp).(?:com|gg|io|li|me|net|org)";
+  const path = "(?:/(?:invite))?/([a-z0-9-.]+)";
+  const regex = `(${protocol}${subdomain}(${domain}${path}))`;
+  return new RegExp(regex, "gmi");
+}
+
+export function registerRouter(
+  router: Router,
+  registers: ((router: Router) => void)[]
+) {
+  registers.forEach((reg) => reg(router));
 }

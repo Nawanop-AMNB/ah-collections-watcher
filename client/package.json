@@ -5,11 +5,15 @@
   "dependencies": {
     "@emotion/react": "latest",
     "@emotion/styled": "latest",
+    "@mui/icons-material": "^5.5.1",
     "@mui/material": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "axios": "^0.26.1",
+    "babel-plugin-import": "^1.13.3",
     "react": "latest",
     "react-dom": "latest",
+    "react-query": "^3.34.17",
     "react-scripts": "latest",
     "typescript": "latest"
   },
