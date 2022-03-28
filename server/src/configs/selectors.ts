@@ -8,10 +8,6 @@ const COLLECTION_CARD =
   "#root > div:nth-child(4) > div > div.row.mb-4 > div > div";
 const WHITELIST_CHECKBOX =
   "#root > div:nth-child(4) > div > div.d-block.d-md-flex > div.CustomCheckbox.checkbox-control.mx-auto.d-flex.flex-wrapper.mb-2 > input";
-const COLLECTION_LABEL = (index: number) =>
-  `#root > div:nth-child(4) > div > div.row.mb-4 > div > div:nth-child(${
-    index + 1
-  }) > div.content-wrapper > div.content > div > span > a`;
 const NEXT_BUTTON =
   ".container > .mt-4 > .ApiPagination > .pagination-main > .pagination-button:nth-child(3)";
 
@@ -22,5 +18,4 @@ export const AH_DETECTOR = {
   COLLECTION_CARD,
   WHITELIST_CHECKBOX,
   NEXT_BUTTON,
-  COLLECTION_LABEL,
 };

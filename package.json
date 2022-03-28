@@ -16,5 +16,8 @@
   "description": "",
   "dependencies": {
     "chalk": "^5.0.1"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^4.0.0"
   }
 }

@@ -1,9 +1,20 @@
 import axios from "axios";
-import { existsSync, mkdirSync, readFile, writeFile } from "fs";
 import type Router from "koa-router";
-import { dirname } from "path";
+import { uniq } from "lodash";
 import { stringify } from "querystring";
-import { LINE_NOTIFY_URL } from "./configs/constants";
+import {
+  COLLECTION_URL,
+  DISCORD_SESSION_DB_PATH,
+  FOLLOW_UPS_DB_PATH,
+  LINE_COLLECTION_NOTIFY_TOKEN,
+  LINE_DISCORD_AUTO_JOINER_NOTIFY_TOKEN,
+  LINE_FOLLOW_UP_NOTIFY_TOKEN,
+  LINE_NOTIFY_URL,
+} from "./configs/constants";
+import { readJson, writeJson } from "./modules/JsonIO";
+import Log from "./modules/Log";
+import { CollectionInfo } from "./types/CollectionTypes";
+import { DiscordSessionSchema, FollowUpSchema } from "./types/DbTypes";
 
 export const looper = async (cb: () => Promise<void>, millis: number) => {
   await cb();
@@ -12,64 +23,44 @@ export const looper = async (cb: () => Promise<void>, millis: number) => {
   }, millis);
 };
 
-export async function notify(token: string, messages: string[]) {
-  return axios({
-    method: "post",
-    url: LINE_NOTIFY_URL,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    data: stringify({
-      message: messages.join("\n"),
-    }),
-  });
+export async function notify(token: string, message: string) {
+  try {
+    await axios({
+      method: "post",
+      url: LINE_NOTIFY_URL,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      data: stringify({
+        message,
+      }),
+    });
+  } catch (error) {
+    Log.error("cannot set messages", error);
+  }
 }
+
+export const joinDiscord = async (sessionId: string, inviteId: string) => {
+  await axios({
+    method: "post",
+    url: `https://discord.com/api/v8/invites/${inviteId}`,
+    headers: {
+      Authorization: sessionId,
+    },
+  });
+};
 
 export const now = () => {
   return new Date().toISOString();
 };
 
-export async function writeJson(path: string, json: any) {
-  const dir = dirname(path);
-
-  if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true });
-  }
-
-  return new Promise<void>((res, rej) => {
-    writeFile(
-      path,
-      JSON.stringify(json, null, 2),
-      {
-        encoding: "utf-8",
-      },
-      (err) => {
-        if (err) {
-          rej(err);
-        } else {
-          res();
-        }
-      }
-    );
-  });
-}
-
-export async function readJson(path: string) {
-  if (!existsSync(path)) {
-    return {};
-  }
-
-  const data = await new Promise<any>((res, rej) => {
-    readFile(path, { encoding: "utf-8" }, (err, data) => {
-      if (err) {
-        rej(err);
-      } else {
-        res(data);
-      }
-    });
-  });
-  return JSON.parse(data) as any;
+export function getLinksFromCollectionInfo(info: CollectionInfo) {
+  const { url, description } = info;
+  const linkFromUrl = (url && url.match(getUrlRegex())) || [];
+  const linksFromDescription =
+    (description && description.match(getUrlRegex())) || [];
+  return uniq([...linkFromUrl, ...linksFromDescription]);
 }
 
 export function getDiscordInviteRegex() {
@@ -78,7 +69,13 @@ export function getDiscordInviteRegex() {
   const domain = "(?:disco|discord|discordapp).(?:com|gg|io|li|me|net|org)";
   const path = "(?:/(?:invite))?/([a-z0-9-.]+)";
   const regex = `(${protocol}${subdomain}(${domain}${path}))`;
-  return new RegExp(regex, "gmi");
+  return new RegExp(regex, "gi");
+}
+
+export function getUrlRegex() {
+  const regex =
+    "((http|https)://)(www.)?[a-zA-Z0-9@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)";
+  return new RegExp(regex, "gi");
 }
 
 export function registerRouter(
@@ -87,3 +84,94 @@ export function registerRouter(
 ) {
   registers.forEach((reg) => reg(router));
 }
+
+export const isFollowUpExist = async (name: string) => {
+  const data: FollowUpSchema = await readJson(FOLLOW_UPS_DB_PATH);
+  return data.followUps && data.followUps[name];
+};
+
+export const notifyNewCollections = async (cols: string[]) => {
+  let collections = new Array(...cols);
+  while (collections.length) {
+    const partialCollections = collections.splice(0, 3);
+    const messages = [];
+    const collectionUrls = partialCollections.map(
+      (col) => `${COLLECTION_URL(col)}#more-info`
+    );
+    messages.push("");
+    messages.push(...collectionUrls);
+    const finalMessage = messages.join("\n\n");
+
+    await notify(LINE_COLLECTION_NOTIFY_TOKEN, finalMessage);
+  }
+  collections = new Array(...cols);
+  Log.debug(
+    `${collections.splice(0, 2).join(', ')}${
+      collections.length && ` and ${collections.length} new collections`
+    } has been notified`
+  );
+};
+
+export const notifyNewLinks = async (
+  collectionName: string,
+  links: string[]
+) => {
+  const lks = new Array(...links);
+  while (lks.length) {
+    const partialLks = lks.splice(0, 5);
+    const messages: string[] = [];
+    messages.push(`name: ${collectionName}`);
+    messages.push(...partialLks);
+    const finalMessage = messages.join("\n\n");
+    await notify(LINE_FOLLOW_UP_NOTIFY_TOKEN, finalMessage);
+  }
+  Log.debug(`${links.length} new links of ${collectionName} has been notified`);
+};
+
+export const autoJoinDiscordByLinks = async (
+  collectionName: string,
+  links: string[]
+) => {
+  const discordLinks = links.filter((link) =>
+    getDiscordInviteRegex().test(link)
+  );
+  const discordSessions: DiscordSessionSchema = await readJson(
+    DISCORD_SESSION_DB_PATH
+  );
+  discordSessions.sessions ||= [];
+
+  if (discordLinks.length > 0) {
+    for (let sessionId of discordSessions.sessions) {
+      for (let link of discordLinks) {
+        const inviteId = link.split("/").slice(-1)[0];
+        await joinDiscord(sessionId, inviteId);
+      }
+    }
+    Log.debug(
+      `detect discord link on <${collectionName}>, auto-join completed`
+    );
+
+    const messages = [];
+    messages.push("");
+    messages.push(`name: ${collectionName}`);
+    messages.push(...discordLinks);
+    const finalMessage = messages.join("\n");
+
+    await notify(LINE_DISCORD_AUTO_JOINER_NOTIFY_TOKEN, finalMessage);
+  }
+};
+
+export const updateCollectionLinks = async (name: string, links: string[]) => {
+  const data: FollowUpSchema = await readJson(FOLLOW_UPS_DB_PATH);
+  if (data.followUps?.[name]) {
+    const oldLinks = data.followUps[name];
+    const newLinks = links.filter((link) => !oldLinks.includes(link));
+    if (newLinks.length > 0) {
+      data.followUps[name] = links;
+      await writeJson(FOLLOW_UPS_DB_PATH, data);
+      Log.debug(`followed-up collection: [${name}] is updated`);
+      await notifyNewLinks(name, links);
+      await autoJoinDiscordByLinks(name, links);
+    }
+  }
+};

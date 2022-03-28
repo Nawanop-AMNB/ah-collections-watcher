@@ -18,23 +18,14 @@ export default function App() {
   const [colName, setColName] = useState("");
   const { refetch } = useFollowUpList();
 
-  const handleAddCollection = async () => {
-    await axios.post(`http://localhost:1880/followUps/${colName}`);
-    await refetch();
-  };
-
-  const handleSetCollection = (e: ChangeEvent<HTMLInputElement>) => {
-    setColName(e.target.value);
-  };
-
   return (
     <Container maxWidth="md">
       <Box mt={3}>
         <Grid container spacing={3}>
-          <Grid item xs={6}>
+          <Grid item xs={8}>
             <CollectionList />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={4}>
             <FollowUpList />
           </Grid>
         </Grid>

@@ -1,5 +1,4 @@
 import puppeteer from "puppeteer";
-import { BLACKLIST_RESOURCE_TYPE } from "../configs/constants";
 
 const init = async () => {
   const browser = await puppeteer.launch({

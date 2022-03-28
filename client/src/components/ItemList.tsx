@@ -3,11 +3,13 @@ import React, { ReactNode } from "react";
 export type IItemList<T> = {
   label?: string;
   items: T[];
-  render: (item: T) => ReactNode;
+  cond?: (item: T) => boolean;
+  render: (item: T, index: number) => ReactNode;
 };
 
-function ItemList<T>({ items, render }: IItemList<T>) {
-  return <>{items.map((item) => render(item))}</>;
+function ItemList<T>({ items, cond, render }: IItemList<T>) {
+  const filtered = cond ? items.filter(cond) : items;
+  return <>{filtered.map((item, index) => render(item, index))}</>;
 }
 
 export default ItemList;
