@@ -2,5 +2,5 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-cd SCRIPT_DIR/../server
+cd $SCRIPT_DIR/../server
 npm run build
