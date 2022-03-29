@@ -33,6 +33,7 @@ const detector = async () => {
       const data: CollectionList = await result.json();
       tempCollections.push(...data.data);
       if (index + 1 < 3) {
+        await page.waitForTimeout(2000);
         await nextPage(page);
         index++;
       } else {
