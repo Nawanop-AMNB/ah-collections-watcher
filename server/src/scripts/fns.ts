@@ -6,7 +6,7 @@ import {
   AH_STATIC_JS_PREFIX_ENDPOINT,
   COLLECTION_ENDPOINT,
   COLLECTION_LIST_ENDPOINT,
-  COLLECTION_URL
+  COLLECTION_URL,
 } from "../configs/constants";
 import { AH_DETECTOR } from "../configs/selectors";
 import Log from "../modules/Log";
@@ -66,28 +66,25 @@ export const goToAhCollections = async (page: Page) => {
 };
 
 export const waitForCollectionsApi = async (page: Page) => {
-  return page.waitForResponse(
-    (res) => {
-      const url = res.url();
-      const status = res.status();
-      const postData = res.request().postData();
-      const validUrl = url.startsWith(COLLECTION_LIST_ENDPOINT);
-      const validStatus = status === 200;
-      let postDataJson = {};
-      try {
-        postDataJson = postData ? JSON.parse(postData) : {};
-      } catch (error: any) {
-        Log.error("Error while parsing", error);
-      } finally {
-        const validPostData =
-          !isEmpty(postDataJson) &&
-          !keys(postDataJson).includes("colleciton_whitelist") &&
-          keys(postDataJson).includes("collection_blacklist");
-        return validUrl && validStatus && validPostData;
-      }
-    },
-    { timeout: 10000 }
-  );
+  return page.waitForResponse((res) => {
+    const url = res.url();
+    const status = res.status();
+    const postData = res.request().postData();
+    const validUrl = url.startsWith(COLLECTION_LIST_ENDPOINT);
+    const validStatus = status === 200;
+    let postDataJson = {};
+    try {
+      postDataJson = postData ? JSON.parse(postData) : {};
+    } catch (error: any) {
+      Log.error("Error while parsing", error);
+    } finally {
+      const validPostData =
+        !isEmpty(postDataJson) &&
+        !keys(postDataJson).includes("colleciton_whitelist") &&
+        keys(postDataJson).includes("collection_blacklist");
+      return validUrl && validStatus && validPostData;
+    }
+  });
 };
 
 export const nextPage = async (page: Page) => {
