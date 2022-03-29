@@ -1,15 +1,15 @@
 import React, { ReactNode } from "react";
 
 export type IItemList<T> = {
-  label?: string;
   items: T[];
-  cond?: (item: T) => boolean;
+  label?: string;
   render: (item: T, index: number) => ReactNode;
+  sort?: (i1: T, i2: T) => number;
 };
 
-function ItemList<T>({ items, cond, render }: IItemList<T>) {
-  const filtered = cond ? items.filter(cond) : items;
-  return <>{filtered.map((item, index) => render(item, index))}</>;
+function ItemList<T>({ items, sort, render }: IItemList<T>) {
+  const list = sort ? items.sort(sort) : items;
+  return <>{list.map((item, index) => render(item, index))}</>;
 }
 
 export default ItemList;

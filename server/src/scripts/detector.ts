@@ -1,4 +1,7 @@
-import { COLLECTIONS_DB_PATH } from "../configs/constants";
+import {
+  COLLECTIONS_DB_PATH,
+  COLLECTION_LIST_ENDPOINT,
+} from "../configs/constants";
 import { readJson, writeJson } from "../modules/JsonIO";
 import Log from "../modules/Log";
 import QuickPuppeteer from "../modules/QuickPuppeteer";
@@ -20,19 +23,22 @@ const detector = async () => {
     const data: CollectionSchema = await readJson(COLLECTIONS_DB_PATH);
     const newest = (data.collections ||= []);
 
+    Log.debug("start getting collections from atomichub");
+
     await goToAhCollections(page);
 
     do {
       const result = await waitForCollectionsApi(page);
+      Log.debug("get result from response on page index ", index);
       const data: CollectionList = await result.json();
       tempCollections.push(...data.data);
-      if (index + 1 < 2) {
+      if (index + 1 < 3) {
         await nextPage(page);
         index++;
       } else {
         break;
       }
-    } while (index < 2);
+    } while (index < 3);
 
     const allCollectionNames = tempCollections.map(
       (data) => data.collection_name
@@ -56,9 +62,10 @@ const detector = async () => {
       const links = getLinksFromCollectionInfo(collection.data);
       await autoJoinDiscordByLinks(name, links);
     }
-  } catch (error) {
-    Log.error("error while detecting new collections", error);
+  } catch (error: any) {
+    Log.error("error while detecting new collections: ", error.message);
   } finally {
+    await page.close();
     await browser.close();
   }
 };
