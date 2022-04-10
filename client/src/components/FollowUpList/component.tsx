@@ -20,7 +20,7 @@ import useFollowUpList from "./hook";
 export type IFollowUpList = {};
 
 function FollowUpList() {
-  const { data = [], status, refetch } = useFollowUpList();
+  const { data = [], isValidating, error, mutate } = useFollowUpList();
 
   const [keyword, setKeyword] = useState("");
   const [page, setPage] = useState(1);
@@ -40,7 +40,7 @@ function FollowUpList() {
 
   const handleRemoveCollection = async (value: string) => {
     await axios.delete(`http://localhost:1880/followUps/${value}`);
-    await refetch();
+    await mutate();
   };
 
   return (
@@ -58,7 +58,7 @@ function FollowUpList() {
             fullWidth
             autoComplete="off"
           />
-          {status === "success" && (
+          {!isValidating && !error && data && (
             <Stack spacing={3} alignItems={"center"}>
               <Grid container>
                 <Grid item xs={12}>

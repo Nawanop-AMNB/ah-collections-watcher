@@ -1,23 +1,13 @@
-import { Add } from "@mui/icons-material";
 import {
-  Button,
-  Card,
-  CardContent,
-  Grid,
-  Stack,
-  TextField,
+  Grid
 } from "@mui/material";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
-import axios from "axios";
-import React, { ChangeEvent, useState } from "react";
+import React from "react";
 import CollectionList from "./components/CollectionList";
-import FollowUpList, { useFollowUpList } from "./components/FollowUpList";
+import FollowUpList from "./components/FollowUpList";
 
 export default function App() {
-  const [colName, setColName] = useState("");
-  const { refetch } = useFollowUpList();
-
   return (
     <Container maxWidth="md">
       <Box mt={3}>

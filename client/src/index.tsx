@@ -32,11 +32,11 @@ ReactDOM.render(
     {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
     <CssBaseline />
     {globalStyles}
-    <QueryClientProvider client={client}>
+    {/* <QueryClientProvider client={client}> */}
       <FollowUpListProvider>
         <App />
       </FollowUpListProvider>
-    </QueryClientProvider>
+    {/* </QueryClientProvider> */}
   </ThemeProvider>,
   document.querySelector("#root")
 );

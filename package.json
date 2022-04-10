@@ -14,9 +14,7 @@
   },
   "homepage": "https://github.com/Nawanop-AMNB/ah-collections-watcher#readme",
   "description": "",
-  "dependencies": {
-    "chalk": "^5.0.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "javascript-obfuscator": "^4.0.0"
   }

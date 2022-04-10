@@ -1,4 +1,5 @@
 import { resolve } from "path";
+import { ResourceType } from "puppeteer";
 
 export const LINE_NOTIFY_URL = "https://notify-api.line.me/api/notify";
 export const LINE_COLLECTION_NOTIFY_TOKEN =
@@ -17,12 +18,8 @@ export const COLLECTIONS_MUTEX_KEY = "collections";
 
 export const AH_STATIC_JS_PREFIX_ENDPOINT =
   "https://wax.atomichub.io/static/js";
-export const AH_CONFIG_ENDPOINT = "https://wax.api.atomichub.io/v1/config";
-export const AH_EXPLORER_URL = "https://wax.atomichub.io/explorer";
 
 export const COLLECTION_URL = (name: string) =>
   `https://wax.atomichub.io/explorer/collection/${name}`;
 export const COLLECTION_ENDPOINT = (name: string) =>
   `https://wax.api.aa.atomichub.io/atomicassets/v1/collections/${name}`;
-export const COLLECTION_LIST_ENDPOINT =
-  "https://wax.api.aa.atomichub.io/atomicassets/v1/collections";

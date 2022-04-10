@@ -13,8 +13,9 @@
     "babel-plugin-import": "^1.13.3",
     "react": "latest",
     "react-dom": "latest",
-    "react-query": "^3.34.17",
+    "react-query": "^3.34.16",
     "react-scripts": "latest",
+    "swr": "^1.2.2",
     "typescript": "latest"
   },
   "scripts": {

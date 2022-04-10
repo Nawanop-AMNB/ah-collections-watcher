@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import React, { useState } from "react";
-import { useQuery } from "react-query";
+import useSWR from "swr";
 import { useFollowUpList } from "../FollowUpList";
 import ItemList from "../ItemList";
 
@@ -22,8 +22,8 @@ const collectionListFetcher = () =>
   axios.get("http://localhost:1880/collections").then((res) => res.data);
 
 function CollectionList() {
-  const { data: followUps, refetch } = useFollowUpList();
-  const { data = [], status } = useQuery<string[]>(
+  const { data: followUps, mutate } = useFollowUpList();
+  const { data = [], error, isValidating } = useSWR<string[]>(
     "list-collections",
     collectionListFetcher
   );
@@ -41,7 +41,7 @@ function CollectionList() {
 
   const handleAddCollection = async (value: string) => {
     await axios.post(`http://localhost:1880/followUps/${value}`);
-    await refetch();
+    await mutate();
   };
 
   return (
@@ -82,7 +82,7 @@ function CollectionList() {
               </Grid>
             </Grid>
           )}
-          {status === "success" && (
+          {!isValidating && !error && data && (
             <>
               <Grid container>
                 <ItemList

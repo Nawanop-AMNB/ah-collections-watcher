@@ -1,8 +1,8 @@
 import { createContext } from "react";
-import { UseQueryResult } from "react-query";
+import { SWRResponse } from 'swr';
 
 export type IFollowUpListContext = {
-  query: UseQueryResult<string[]>;
+  query: SWRResponse<string[]>;
 };
 
 const FollowUpListContext = createContext<IFollowUpListContext>(

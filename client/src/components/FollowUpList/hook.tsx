@@ -3,12 +3,13 @@ import FollowUpListContext from "./context";
 
 const useFollowUpList = () => {
   const { query } = useContext(FollowUpListContext);
-  const { data, status, refetch } = query;
+  const { data, isValidating, error, mutate } = query;
 
   return {
     data,
-    status,
-    refetch,
+    isValidating,
+    error,
+    mutate,
   };
 };
 

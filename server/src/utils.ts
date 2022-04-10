@@ -5,16 +5,15 @@ import { stringify } from "querystring";
 import {
   COLLECTION_URL,
   DISCORD_SESSION_DB_PATH,
-  FOLLOW_UPS_DB_PATH,
   LINE_COLLECTION_NOTIFY_TOKEN,
   LINE_DISCORD_AUTO_JOINER_NOTIFY_TOKEN,
   LINE_FOLLOW_UP_NOTIFY_TOKEN,
   LINE_NOTIFY_URL,
 } from "./configs/constants";
-import { readJson, writeJson } from "./modules/JsonIO";
+import { readJson } from "./modules/JsonIO";
 import Log from "./modules/Log";
 import { CollectionInfo } from "./types/CollectionTypes";
-import { DiscordSessionSchema, FollowUpSchema } from "./types/DbTypes";
+import { DiscordSessionSchema } from "./types/DbTypes";
 
 export const looper = async (cb: () => Promise<void>, millis: number) => {
   await cb();
@@ -55,6 +54,15 @@ export const now = () => {
   return new Date().toISOString();
 };
 
+export const isStringifiedJson = (jsonStr: string) => {
+  try {
+    JSON.parse(jsonStr);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 export function getLinksFromCollectionInfo(info: CollectionInfo) {
   const { url, description } = info;
   const linkFromUrl = (url && url.match(getUrlRegex())) || [];
@@ -73,7 +81,8 @@ export function getDiscordInviteRegex() {
 }
 
 export function getUrlRegex() {
-  const regex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi;
+  const regex =
+    /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi;
   return new RegExp(regex, "gi");
 }
 
@@ -83,11 +92,6 @@ export function registerRouter(
 ) {
   registers.forEach((reg) => reg(router));
 }
-
-export const isFollowUpExist = async (name: string) => {
-  const data: FollowUpSchema = await readJson(FOLLOW_UPS_DB_PATH);
-  return data.followUps && data.followUps[name];
-};
 
 export const notifyNewCollections = async (cols: string[]) => {
   let collections = new Array(...cols);
@@ -105,7 +109,7 @@ export const notifyNewCollections = async (cols: string[]) => {
   }
   collections = new Array(...cols);
   Log.debug(
-    `${collections.splice(0, 2).join(', ')}${
+    `${collections.splice(0, 2).join(", ")}${
       collections.length && ` and ${collections.length} new collections`
     } has been notified`
   );
@@ -157,20 +161,5 @@ export const autoJoinDiscordByLinks = async (
     const finalMessage = messages.join("\n");
 
     await notify(LINE_DISCORD_AUTO_JOINER_NOTIFY_TOKEN, finalMessage);
-  }
-};
-
-export const updateCollectionLinks = async (name: string, links: string[]) => {
-  const data: FollowUpSchema = await readJson(FOLLOW_UPS_DB_PATH);
-  if (data.followUps?.[name]) {
-    const oldLinks = data.followUps[name];
-    const newLinks = links.filter((link) => !oldLinks.includes(link));
-    if (newLinks.length > 0) {
-      data.followUps[name] = links;
-      await writeJson(FOLLOW_UPS_DB_PATH, data);
-      Log.debug(`followed-up collection: [${name}] is updated`);
-      await notifyNewLinks(name, links);
-      await autoJoinDiscordByLinks(name, links);
-    }
   }
 };
