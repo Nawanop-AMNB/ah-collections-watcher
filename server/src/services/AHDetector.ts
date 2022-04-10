@@ -75,7 +75,7 @@ async function process(pageIndex: number, size: number) {
     db.collections = collectionNames;
     await writeJson(COLLECTIONS_DB_PATH, db);
 
-    for (let name in diffCollectionNames) {
+    for (let name of diffCollectionNames) {
       const collection = (collections.data as any[]).find(
         (d) => d.collection_name == name
       );
