@@ -4,8 +4,8 @@ import Router from "koa-router";
 import cors from "koa2-cors";
 import Log from "./modules/Log";
 import { collection, followUp } from "./routes";
-import AHDetector from "./service/AHDetector";
-import AHWatcher from "./service/AHWatcher";
+import AHDetector from "./services/AHDetector";
+import AHWatcher from "./services/AHWatcher";
 import { looper, registerRouter } from "./utils";
 
 const app = new Koa();
